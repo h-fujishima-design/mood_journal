@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const response = await client.messages.create({
-      model: "claude-opus-4-7",
+      model: "claude-haiku-4-5",
       max_tokens: 512,
       system: `You are a warm, empathetic mood journal AI. Analyze the user's journal entry and respond with a JSON object containing exactly these three fields:
 - "mood": a single emoji + 1-3 word mood label (e.g. "😊 Content", "😔 Melancholy", "😤 Frustrated")
