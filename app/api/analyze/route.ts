@@ -1,6 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 
+if (!process.env.ANTHROPIC_API_KEY) {
+  throw new Error("ANTHROPIC_API_KEY environment variable is not set");
+}
+
 const client = new Anthropic();
 
 const DAILY_LIMIT = 3;
@@ -78,14 +82,20 @@ Respond ONLY with valid JSON. No markdown, no explanation.`,
     const text =
       response.content[0].type === "text" ? response.content[0].text : "";
 
-    const result = JSON.parse(text);
+    console.log("[analyze] raw response:", text);
+
+    // Strip markdown code fences if present
+    const cleaned = text.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
+
+    const result = JSON.parse(cleaned);
     return NextResponse.json(result, {
       headers: { "X-RateLimit-Remaining": String(remaining) },
     });
   } catch (err) {
-    console.error("[analyze] error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[analyze] error:", message);
     return NextResponse.json(
-      { error: "Analysis failed. Please try again in a moment." },
+      { error: `Analysis failed: ${message}` },
       { status: 500 }
     );
   }
