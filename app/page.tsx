@@ -13,6 +13,7 @@ export default function Home() {
   const [result, setResult] = useState<MoodResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,6 +33,8 @@ export default function Home() {
       setError(data.error || "Something went wrong. Please try again.");
     } else {
       setResult(data);
+      const rem = res.headers.get("X-RateLimit-Remaining");
+      if (rem !== null) setRemaining(Number(rem));
     }
 
     setLoading(false);
@@ -65,7 +68,11 @@ export default function Home() {
               maxLength={2000}
             />
             <div className="flex items-center justify-between px-4 pb-3">
-              <span className="text-xs text-gray-400">{entry.length}/2000</span>
+              <span className="text-xs text-gray-400">
+                {remaining !== null
+                  ? `${remaining} free ${remaining === 1 ? "analysis" : "analyses"} left today`
+                  : `${entry.length}/2000`}
+              </span>
               <button
                 type="submit"
                 disabled={loading || entry.trim().length < 10}
